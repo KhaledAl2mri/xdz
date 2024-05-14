@@ -1,0 +1,17 @@
+{
+    "name": "telegram-bot",
+    "version": "1.0.0",
+    "description": "A Telegram bot for checking product availability",
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js"
+    },
+    "dependencies": {
+      "axios": "^0.21.1",
+      "cheerio": "^1.0.0-rc.5",
+      "node-telegram-bot-api": "^0.50.0",
+      "fs": "^0.0.1-security"
+
+    }
+  }
+  
