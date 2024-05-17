@@ -101,6 +101,8 @@ bot.onText(/\/off/, (msg) => {
   }
 });
 
+
+
 setInterval(() => {
   if (running) {
     for (const chatId in subscribers){
@@ -111,28 +113,27 @@ setInterval(() => {
 
           products.each((i, product) => {
             const name = $(product).find('strong.product.name').text().trim();
-            const availability = $(product).hasClass('unavailable') ? 'غير متوفر' : 'متوفر';
+            const availability = $(product).hasClass('unavailable')? 'غير متوفر' : 'متوفر';
             const link = $(product).find('a.product-item-link').attr('href');
 
             const imageUrl = imageUrlMap[name];
 
-            const now = Date.now();
-            const fiveMinutes = 5 * 60 * 1000; 
+            if (!previousProductDetails[name] || previousProductDetails[name].availability!== availability) {
+              if (availability === 'متوفر') {
+                const message = `اسم المنتج: ${name}\n الحالة : ${availability}`;
+                const opts = {
+                  caption: message,  
+                  reply_markup: JSON.stringify({
+                    inline_keyboard: [
+                      [{ text: 'شراء الآن', url: link }]
+                    ]
+                  })
+                };
 
-            if (availability === 'متوفر' && (!previousProductDetails[name] || now - previousProductDetails[name].timestamp > fiveMinutes)) {
-              const message = `اسم المنتج: ${name}\n الحالة : ${availability}`;
-              const opts = {
-                caption: message,  
-                reply_markup: JSON.stringify({
-                  inline_keyboard: [
-                    [{ text: 'شراء الآن', url: link }]
-                  ]
-                })
-              };
+                bot.sendPhoto(chatId, imageUrl, opts);
+              }
 
-              bot.sendPhoto(chatId, imageUrl, opts);
-
-              previousProductDetails[name] = { availability: availability, timestamp: now };
+              previousProductDetails[name] = { availability: availability, timestamp: Date.now() };
             }
           });
         });
@@ -140,6 +141,7 @@ setInterval(() => {
     }
   }
 }, 15000); // Check every 15 seconds
+
 
 bot.onText(/\/status/, (msg) => {
   const chatId = msg.chat.id;
