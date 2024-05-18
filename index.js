@@ -4,7 +4,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 
 const website = 'https://www.dzrt.com/ar/our-products.html?product_list_limit=36';
-const token = '6723361886:AAEFTvQhaFM4_VZC0NUfFugpbkA5-N8JeIM';
+const token = '6770675713:AAG-oyMX4iPG6tLuYdHpVH1u4dZ-C9IfWRQ';
 
 const bot = new TelegramBot(token, {polling: true});
 
