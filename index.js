@@ -101,45 +101,49 @@ bot.onText(/\/off/, (msg) => {
   }
 });
 
-
-
 setInterval(() => {
-  if (running) {
-    for (const chatId in subscribers){
-      if (subscribers[chatId]) {
-        axios.get(website).then(response => {
-          const $ = cheerio.load(response.data);
-          const products = $('li.item.product.product-item');
+    if (running) {
+        for (const chatId in subscribers) {
+            if (subscribers[chatId]) {
+                axios.get(website).then(response => {
+                    const $ = cheerio.load(response.data);
+                    const products = $('li.item.product.product-item');
 
-          products.each((i, product) => {
-            const name = $(product).find('strong.product.name').text().trim();
-            const availability = $(product).hasClass('unavailable')? 'غير متوفر' : 'متوفر';
-            const link = $(product).find('a.product-item-link').attr('href');
+                    products.each((i, product) => {
+                        const name = $(product).find('strong.product.name').text().trim();
+                        const availability = $(product).hasClass('unavailable') ? 'غير متوفر' : 'متوفر';
+                        const link = $(product).find('a.product-item-link').attr('href');
+                        const imageUrl = imageUrlMap[name];
+                        const now = Date.now();
+                        const fiveMinutes = 15 * 60 * 1000;
 
-            const imageUrl = imageUrlMap[name];
+                        if (
+                            availability === 'متوفر' &&
+                            (!previousProductDetails[chatId] || // If no previous details for this subscriber
+                                !previousProductDetails[chatId][name] || // If no previous details for this product
+                                now - previousProductDetails[chatId][name].timestamp > fiveMinutes) // If the last sent timestamp is older than 5 minutes
+                        ) {
+                            const message = `اسم المنتج: ${name}\n الحالة : ${availability}`;
+                            const opts = {
+                                caption: message,
+                                reply_markup: JSON.stringify({
+                                    inline_keyboard: [
+                                        [{ text: 'شراء الآن', url: link }]
+                                    ]
+                                })
+                            };
 
-            if (!previousProductDetails[name] || previousProductDetails[name].availability!== availability) {
-              if (availability === 'متوفر') {
-                const message = `اسم المنتج: ${name}\n الحالة : ${availability}`;
-                const opts = {
-                  caption: message,  
-                  reply_markup: JSON.stringify({
-                    inline_keyboard: [
-                      [{ text: 'شراء الآن', url: link }]
-                    ]
-                  })
-                };
-
-                bot.sendPhoto(chatId, imageUrl, opts);
-              }
-
-              previousProductDetails[name] = { availability: availability, timestamp: Date.now() };
+                            bot.sendPhoto(chatId, imageUrl, opts);
+                            if (!previousProductDetails[chatId]) {
+                                previousProductDetails[chatId] = {};
+                            }
+                            previousProductDetails[chatId][name] = { availability: availability, timestamp: now };
+                        }
+                    });
+                });
             }
-          });
-        });
-      }
+        }
     }
-  }
 }, 15000); // Check every 15 seconds
 
 
